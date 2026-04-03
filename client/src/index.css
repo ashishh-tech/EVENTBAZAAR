@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700;800&display=swap');
+
+/* ── Reset & Root ─────────────────────────────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:      #f5f2ec;
+  --bg2:     #edeae2;
+  --ink:     #111009;
+  --ink2:    #3a3830;
+  --muted:   #888070;
+  --accent:  #e8440a;
+  --accent2: #f5a623;
+  --green:   #1a7a4a;
+  --card:    #ffffff;
+  --border:  #d8d4c8;
+  --shadow:  0 2px 24px rgba(17,16,9,.08);
+  --r:       14px;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+a { text-decoration: none; color: inherit; }
+img { display: block; max-width: 100%; }
+
+/* ── Typography ────────────────────────────────────────────────────────── */
+.display {
+  font-family: 'Clash Display', sans-serif;
+  line-height: 1.0;
+  letter-spacing: -2px;
+}
+
+/* ── Noise texture overlay ──────────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1000; opacity: .4;
+}
+
+/* ── Common Buttons ────────────────────────────────────────────────────────────── */
+.btn-ghost {
+  padding: 8px 20px; border-radius: 100px;
+  border: 1.5px solid var(--border);
+  font-size: 13px; font-weight: 600; color: var(--ink2);
+  cursor: pointer; transition: all .2s;
+  background: transparent;
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-solid {
+  padding: 9px 22px; border-radius: 100px;
+  background: var(--accent); color: #fff;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; border: none;
+  transition: all .2s; box-shadow: 0 4px 12px rgba(232,68,10,.3);
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+.btn-solid:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(232,68,10,.4); }
+
+/* Custom Scrollbar for sidebars/modals */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Animations ───────────────────────────────────────────────── */
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.5); opacity: .6; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.fade-in.visible { opacity: 1; transform: none; }

@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EventBazaar — Book a Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --saffron: #FF6B00;
+  --saffron-light: rgba(255,107,0,.12);
+  --gold: #FFB800;
+  --deep: #080808;
+  --surface: #111111;
+  --card: #181818;
+  --card2: #1E1E1E;
+  --border: #2A2A2A;
+  --border2: #333;
+  --muted: #555;
+  --text: #F2EDE6;
+  --text-soft: #888;
+  --text-muted: #555;
+  --green: #00D68F;
+  --red: #FF4545;
+  --blue: #4A9EFF;
+  --r: 14px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--deep);
+  color:var(--text);
+  min-height:100vh;
+}
+
+/* ── TOP NAV ─────────────────────── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;
+  background:rgba(8,8,8,.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.nav-brand{
+  font-family:'Syne',sans-serif;
+  font-size:20px;font-weight:800;
+  letter-spacing:-.5px;
+}
+.nav-brand span{color:var(--saffron)}
+.nav-back{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--text-soft);
+  text-decoration:none;cursor:pointer;
+  transition:color .2s;
+}
+.nav-back:hover{color:var(--text)}
+.nav-badge{
+  font-size:11px;
+  background:var(--saffron-light);
+  color:var(--saffron);
+  border:1px solid rgba(255,107,0,.25);
+  border-radius:99px;
+  padding:4px 12px;
+  font-weight:600;
+}
+
+/* ── PROGRESS BAR ────────────────── */
+.progress-wrap{
+  padding:24px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.progress-steps{
+  display:flex;align-items:center;
+  max-width:700px;margin:0 auto;
+  gap:0;
+}
+.step-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  position:relative;
+}
+.step-item:not(:last-child)::after{
+  content:'';
+  position:absolute;
+  top:18px;left:60%;
+  width:80%;height:2px;
+  background:var(--border);
+  z-index:0;
+}
+.step-item.done:not(:last-child)::after{background:var(--saffron)}
+.step-item.active:not(:last-child)::after{background:var(--border)}
+
+.step-circle{
+  width:36px;height:36px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+  border:2px solid var(--border);
+  background:var(--card);
+  color:var(--muted);
+  position:relative;z-index:1;
+  transition:all .3s;
+}
+.step-item.done .step-circle{
+  background:var(--saffron);
+  border-color:var(--saffron);
+  color:#fff;
+}
+.step-item.active .step-circle{
+  border-color:var(--saffron);
+  color:var(--saffron);
+  box-shadow:0 0 0 4px rgba(255,107,0,.15);
+}
+.step-label{
+  font-size:11px;color:var(--text-muted);
+  margin-top:6px;text-align:center;
+  font-weight:500;letter-spacing:.3px;
+}
+.step-item.active .step-label{color:var(--text-soft)}
+.step-item.done .step-label{color:var(--saffron)}
+
+/* ── LAYOUT ──────────────────────── */
+.layout{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:24px;
+  max-width:1100px;
+  margin:0 auto;
+  padding:28px 16px 60px;
+}
+@media(min-width:900px){
+  .layout{grid-template-columns:1fr 360px;align-items:start}
+}
+
+/* ── MAIN PANEL ──────────────────── */
+.main-panel{}
+
+.step-panel{display:none}
+.step-panel.active{display:block;animation:slideIn .35s ease}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(20px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+.panel-heading{
+  font-family:'Syne',sans-serif;
+  font-size:22px;font-weight:800;
+  margin-bottom:6px;letter-spacing:-.3px;
+}
+.panel-sub{
+  font-size:14px;color:var(--text-soft);
+  margin-bottom:24px;line-height:1.55;
+}
+
+/* ── PACKAGE CARDS ───────────────── */
+.pkg-grid{display:flex;flex-direction:column;gap:14px}
+
+.pkg-card{
+  border:2px solid var(--border);
+  border-radius:var(--r);
+  padding:20px;
+  background:var(--card);
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.pkg-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:3px;
+  background:transparent;
+  transition:background .2s;
+}
+.pkg-card:hover{border-color:#444;transform:translateX(4px)}
+.pkg-card.selected{
+  border-color:var(--saffron);
+  background:rgba(255,107,0,.06);
+}
+.pkg-card.selected::before{background:linear-gradient(90deg,var(--saffron),var(--gold))}
+
+.pkg-badge{
+  display:inline-block;
+  font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:3px 10px;border-radius:99px;
+  margin-bottom:12px;
+}
+.badge-popular{background:rgba(255,184,0,.15);color:var(--gold);border:1px solid rgba(255,184,0,.3)}
+.badge-best{background:rgba(0,214,143,.12);color:var(--green);border:1px solid rgba(0,214,143,.25)}
+.badge-basic{background:rgba(255,255,255,.05);color:var(--text-soft);border:1px solid var(--border)}
+
+.pkg-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.pkg-name{
+  font-family:'Syne',sans-serif;
+  font-size:18px;font-weight:700;
+  margin-bottom:4px;
+}
+.pkg-tagline{font-size:13px;color:var(--text-soft)}
+.pkg-price-box{text-align:right;flex-shrink:0}
+.pkg-price{
+  font-family:'Syne',sans-serif;
+  font-size:22px;font-weight:800;
+  color:var(--text);
+}
+.pkg-price-note{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+.pkg-divider{
+  height:1px;background:var(--border);
+  margin:16px 0;
+}
+
+.pkg-features{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px 16px;
+}
+.pkg-feature{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--text-soft);
+}
+.feat-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--saffron);flex-shrink:0;
+}
+.pkg-card.selected .feat-dot{background:var(--gold)}
+
+.pkg-select-indicator{
+  position:absolute;top:20px;right:20px;
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;
+  transition:all .2s;
+}
+.pkg-card.selected .pkg-select-indicator{
+  background:var(--saffron);border-color:var(--saffron);color:#fff;
+}
+
+/* ── DATE & DETAILS STEP ─────────── */
+.form-grid{display:flex;flex-direction:column;gap:18px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{
+  font-size:11px;font-weight:600;
+  color:var(--text-soft);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.field-hint{font-size:11px;color:var(--muted);margin-top:3px}
+
+.input-wrap{position:relative}
+.input-wrap .icon{
+  position:absolute;left:14px;top:50%;
+  transform:translateY(-50%);
+  font-size:16px;color:var(--muted);
+  pointer-events:none;
+}
+.field input,.field select,.field textarea{
+  width:100%;
+  padding:13px 14px 13px 44px;
+  background:var(--card2);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  appearance:none;
+}
+.field textarea{padding:13px 14px;resize:vertical;min-height:90px}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted)}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--saffron);
+  box-shadow:0 0 0 3px rgba(255,107,0,.1);
+}
+.field.error input,.field.error select{border-color:var(--red)}
+.field-error{font-size:11px;color:var(--red);display:none}
+.field.error .field-error{display:block}
+
+.capacity-bar{
+  display:flex;align-items:center;gap:12px;margin-top:8px;
+}
+.cap-track{
+  flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;
+}
+.cap-fill{
+  height:100%;background:linear-gradient(90deg,var(--saffron),var(--gold));
+  border-radius:3px;transition:width .3s;
+}
+.cap-label{font-size:12px;color:var(--text-soft);white-space:nowrap}
+
+/* Event type chips */
+.type-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.type-chip{
+  padding:7px 14px;
+  border:1.5px solid var(--border);
+  border-radius:99px;
+  background:var(--card2);
+  color:var(--text-soft);
+  font-size:13px;font-weight:500;
+  cursor:pointer;
+  transition:all .2s;
+}
+.type-chip:hover{border-color:#555;color:var(--text)}
+.type-chip.selected{
+  border-color:var(--saffron);
+  background:var(--saffron-light);
+  color:var(--saffron);
+}
+
+/* ── REVIEW STEP ─────────────────── */
+.review-block{
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  background:var(--card);
+  overflow:hidden;
+  margin-bottom:16px;
+}
+.review-block-header{
+  padding:14px 18px;
+  background:var(--card2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.rbh-title{
+  font-family:'Syne',sans-serif;
+  font-size:13px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  color:var(--text-soft);
+}
+.rbh-edit{
+  font-size:12px;color:var(--saffron);cursor:pointer;
+  text-decoration:none;font-weight:600;
+}
+.review-block-body{padding:18px}
+
+.review-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.review-row:last-child{border:none}
+.rr-label{color:var(--text-soft)}
+.rr-val{font-weight:500;text-align:right;max-width:60%}
+
+.terms-check{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--card);
+  cursor:pointer;
+  margin-bottom:16px;
+}
+.terms-check input[type=checkbox]{
+  width:18px;height:18px;
+  accent-color:var(--saffron);
+  flex-shrink:0;margin-top:2px;
+}
+.terms-text{font-size:13px;color:var(--text-soft);line-height:1.55}
+.terms-text a{color:var(--saffron);text-decoration:none}
+
+/* ── PAYMENT STEP ────────────────── */
+.payment-methods{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.pay-method{
+  border:2px solid var(--border);
+  border-radius:var(--r);
+  padding:16px 18px;
+  cursor:pointer;
+  display:flex;align-items:center;gap:14px;
+  transition:all .2s;
+  background:var(--card);
+}
+.pay-method:hover{border-color:#444}
+.pay-method.selected{border-color:var(--saffron);background:rgba(255,107,0,.05)}
+.pay-icon{font-size:24px;width:36px;text-align:center}
+.pay-info{}
+.pay-name{font-size:15px;font-weight:600;margin-bottom:2px}
+.pay-desc{font-size:12px;color:var(--text-soft)}
+.pay-radio{
+  margin-left:auto;
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:all .2s;
+}
+.pay-method.selected .pay-radio{
+  border-color:var(--saffron);
+  background:var(--saffron);
+}
+.pay-method.selected .pay-radio::after{
+  content:'';width:8px;height:8px;
+  border-radius:50%;background:#fff;
+}
+
+.razorpay-secure{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;
+  background:rgba(0,214,143,.06);
+  border:1px solid rgba(0,214,143,.2);
+  border-radius:10px;
+  font-size:12px;color:var(--green);
+  margin-bottom:20px;
+}
+.razorpay-logo{
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:13px;
+  color:var(--blue);
+}
+
+/* ── SIDEBAR / ORDER SUMMARY ─────── */
+.sidebar{}
+
+.summary-card{
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  background:var(--card);
+  overflow:hidden;
+  position:sticky;top:90px;
+}
+
+.summary-planner{
+  padding:20px;
+  border-bottom:1px solid var(--border);
+  background:var(--card2);
+  display:flex;gap:14px;align-items:center;
+}
+.planner-avatar{
+  width:52px;height:52px;border-radius:12px;
+  background:linear-gradient(135deg,var(--saffron),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.planner-name{
+  font-family:'Syne',sans-serif;
+  font-size:16px;font-weight:700;margin-bottom:3px;
+}
+.planner-meta{font-size:12px;color:var(--text-soft)}
+.planner-rating{
+  display:flex;align-items:center;gap:4px;
+  font-size:12px;color:var(--gold);margin-top:4px;
+}
+
+.summary-section{
+  padding:18px 20px;
+  border-bottom:1px solid var(--border);
+}
+.summary-section:last-child{border:none}
+
+.ss-title{
+  font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:12px;
+}
+
+.summary-row{
+  display:flex;justify-content:space-between;
+  font-size:14px;padding:6px 0;
+  color:var(--text-soft);
+}
+.summary-row .val{color:var(--text);font-weight:500}
+.summary-row.total{
+  font-size:16px;font-weight:700;
+  color:var(--text);
+  padding-top:12px;
+  margin-top:4px;
+  border-top:1px dashed var(--border2);
+}
+.summary-row.total .val{color:var(--saffron)}
+
+.advance-tag{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,107,0,.08);
+  border:1px solid rgba(255,107,0,.2);
+  border-radius:8px;
+  padding:10px 14px;
+  margin-top:12px;
+  font-size:12px;
+  color:var(--saffron);
+  line-height:1.45;
+}
+
+.cta-btn{
+  display:block;width:100%;
+  padding:15px;
+  background:linear-gradient(135deg,var(--saffron) 0%,#FF9500 100%);
+  border:none;border-radius:12px;
+  color:#fff;
+  font-family:'Syne',sans-serif;
+  font-size:15px;font-weight:700;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+  letter-spacing:.3px;
+}
+.cta-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,107,0,.4)}
+.cta-btn:active{transform:scale(.98)}
+.cta-btn:disabled{opacity:.5;pointer-events:none}
+.cta-btn.loading{pointer-events:none}
+.cta-btn.loading::before{
+  content:'';position:absolute;top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  animation:shimmer 1s infinite;
+}
+@keyframes shimmer{to{left:100%}}
+
+.back-btn{
+  display:block;width:100%;
+  padding:12px;
+  background:transparent;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  color:var(--text-soft);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:600;
+  cursor:pointer;
+  margin-top:10px;
+  transition:all .2s;
+}
+.back-btn:hover{border-color:#555;color:var(--text)}
+
+.trust-row{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  padding:14px;
+  font-size:11px;color:var(--muted);
+}
+.trust-item{display:flex;align-items:center;gap:4px}
+
+/* ── SUCCESS SCREEN ──────────────── */
+.success-screen{
+  display:none;
+  text-align:center;
+  padding:60px 24px;
+  animation:fadeUp .5s ease;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.success-icon{
+  width:90px;height:90px;
+  background:linear-gradient(135deg,rgba(0,214,143,.15),rgba(0,214,143,.05));
+  border:2px solid rgba(0,214,143,.3);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;
+  margin:0 auto 28px;
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1) .2s both;
+}
+@keyframes pop{
+  from{transform:scale(0)}
+  to{transform:scale(1)}
+}
+.success-title{
+  font-family:'Syne',sans-serif;
+  font-size:28px;font-weight:800;margin-bottom:10px;
+}
+.success-sub{font-size:15px;color:var(--text-soft);margin-bottom:32px;line-height:1.6}
+
+.booking-ref{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 20px;
+  font-family:'Syne',sans-serif;
+  font-size:18px;font-weight:700;
+  letter-spacing:2px;
+  margin-bottom:32px;
+  color:var(--saffron);
+}
+
+.success-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary{
+  padding:12px 24px;
+  background:var(--saffron);border:none;
+  border-radius:10px;color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+.btn-primary:hover{background:#FF7A00}
+.btn-outline{
+  padding:12px 24px;
+  background:transparent;
+  border:1.5px solid var(--border);
+  border-radius:10px;color:var(--text-soft);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+.btn-outline:hover{border-color:#555;color:var(--text)}
+
+.next-steps{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  max-width:480px;margin:32px auto 0;
+  text-align:left;
+}
+@media(max-width:500px){.next-steps{grid-template-columns:1fr}}
+.ns-item{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:16px;
+}
+.ns-icon{font-size:20px;margin-bottom:8px}
+.ns-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.ns-desc{font-size:11px;color:var(--text-muted);line-height:1.4}
+
+/* ── TOAST ───────────────────────── */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:12px;padding:12px 20px;
+  font-size:14px;color:var(--text);
+  display:flex;align-items:center;gap:10px;
+  z-index:999;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 16px 40px rgba(0,0,0,.6);
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{border-color:var(--red)}
+.toast.success{border-color:var(--green)}
+
+/* ── MISC ────────────────────────── */
+.divider-line{
+  height:1px;background:var(--border);
+  margin:24px 0;
+}
+.section-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--saffron);
+  background:var(--saffron-light);
+  border:1px solid rgba(255,107,0,.2);
+  border-radius:99px;padding:4px 12px;
+  margin-bottom:12px;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-back" onclick="goBack()">← Back to Profile</div>
+  <div class="nav-brand">Event<span>Bazaar</span></div>
+  <div class="nav-badge">Secure Booking</div>
+</nav>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-steps">
+    <div class="step-item active" id="prog1">
+      <div class="step-circle" id="pc1">1</div>
+      <div class="step-label">Package</div>
+    </div>
+    <div class="step-item" id="prog2">
+      <div class="step-circle" id="pc2">2</div>
+      <div class="step-label">Details</div>
+    </div>
+    <div class="step-item" id="prog3">
+      <div class="step-circle" id="pc3">3</div>
+      <div class="step-label">Review</div>
+    </div>
+    <div class="step-item" id="prog4">
+      <div class="step-circle" id="pc4">4</div>
+      <div class="step-label">Payment</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout" id="mainLayout">
+
+  <!-- LEFT: STEPS -->
+  <div class="main-panel">
+
+    <!-- STEP 1: PACKAGE -->
+    <div class="step-panel active" id="step1">
+      <div class="section-tag">✦ Step 1 of 4</div>
+      <h2 class="panel-heading">Choose a Package</h2>
+      <p class="panel-sub">Select the package that best fits your event scale and budget.</p>
+
+      <div class="pkg-grid">
+
+        <!-- Package: Basic -->
+        <div class="pkg-card" onclick="selectPkg(this,'Basic','₹45,000',45000)" data-pkg="Basic">
+          <div class="pkg-select-indicator">✓</div>
+          <div class="pkg-badge badge-basic">Starter</div>
+          <div class="pkg-top">
+            <div>
+              <div class="pkg-name">Basic Bundle</div>
+              <div class="pkg-tagline">Perfect for small fests up to 300 guests</div>
+            </div>
+            <div class="pkg-price-box">
+              <div class="pkg-price">₹45K</div>
+              <div class="pkg-price-note">+ 18% GST</div>
+            </div>
+          </div>
+          <div class="pkg-divider"></div>
+          <div class="pkg-features">
+            <div class="pkg-feature"><div class="feat-dot"></div>Decor & Setup</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Sound System</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Basic Lighting</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>On-site Coordinator</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Up to 300 pax</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>8-hour coverage</div>
+          </div>
+        </div>
+
+        <!-- Package: Pro -->
+        <div class="pkg-card selected" onclick="selectPkg(this,'Pro','₹90,000',90000)" data-pkg="Pro">
+          <div class="pkg-select-indicator">✓</div>
+          <div class="pkg-badge badge-popular">⭐ Most Popular</div>
+          <div class="pkg-top">
+            <div>
+              <div class="pkg-name">Pro Package</div>
+              <div class="pkg-tagline">Ideal for cultural nights & tech summits</div>
+            </div>
+            <div class="pkg-price-box">
+              <div class="pkg-price">₹90K</div>
+              <div class="pkg-price-note">+ 18% GST</div>
+            </div>
+          </div>
+          <div class="pkg-divider"></div>
+          <div class="pkg-features">
+            <div class="pkg-feature"><div class="feat-dot"></div>Premium Decor</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Pro Sound + DJ</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>LED Stage Lights</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>2 Coordinators</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Up to 800 pax</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Photography Add-on</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>12-hour coverage</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Catering support</div>
+          </div>
+        </div>
+
+        <!-- Package: Elite -->
+        <div class="pkg-card" onclick="selectPkg(this,'Elite','₹1,75,000',175000)" data-pkg="Elite">
+          <div class="pkg-select-indicator">✓</div>
+          <div class="pkg-badge badge-best">👑 Best Value</div>
+          <div class="pkg-top">
+            <div>
+              <div class="pkg-name">Elite Experience</div>
+              <div class="pkg-tagline">Full-scale mega fests & flagship events</div>
+            </div>
+            <div class="pkg-price-box">
+              <div class="pkg-price">₹1.75L</div>
+              <div class="pkg-price-note">+ 18% GST</div>
+            </div>
+          </div>
+          <div class="pkg-divider"></div>
+          <div class="pkg-features">
+            <div class="pkg-feature"><div class="feat-dot"></div>Luxury Stage Design</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Celebrity DJ</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Full AV Production</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Dedicated Team</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Unlimited guests</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Photo + Video</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>24-hr support</div>
+            <div class="pkg-feature"><div class="feat-dot"></div>Drone coverage</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STEP 2: EVENT DETAILS -->
+    <div class="step-panel" id="step2">
+      <div class="section-tag">✦ Step 2 of 4</div>
+      <h2 class="panel-heading">Event Details</h2>
+      <p class="panel-sub">Tell us about your event so the planner can prepare perfectly.</p>
+
+      <div class="form-grid">
+        <div class="field" id="f-eventName">
+          <label>Event Name</label>
+          <div class="input-wrap">
+            <span class="icon">🎪</span>
+            <input type="text" id="eventName" placeholder="TechFest 2025 — Coding Summit"/>
+          </div>
+          <div class="field-error">Event name is required</div>
+        </div>
+
+        <div class="form-row">
+          <div class="field" id="f-eventDate">
+            <label>Event Date</label>
+            <div class="input-wrap">
+              <span class="icon">📅</span>
+              <input type="date" id="eventDate" min=""/>
+            </div>
+            <div class="field-error">Select a future date</div>
+          </div>
+          <div class="field" id="f-eventTime">
+            <label>Start Time</label>
+            <div class="input-wrap">
+              <span class="icon">🕐</span>
+              <input type="time" id="eventTime" value="18:00"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="f-venue">
+          <label>Venue / Campus</label>
+          <div class="input-wrap">
+            <span class="icon">📍</span>
+            <input type="text" id="venue" placeholder="IIT Bombay, Main Auditorium"/>
+          </div>
+          <div class="field-error">Venue is required</div>
+        </div>
+
+        <div class="field" id="f-city">
+          <label>City</label>
+          <div class="input-wrap">
+            <span class="icon">🌆</span>
+            <select id="city">
+              <option value="">Select city…</option>
+              <option>Mumbai</option><option>Delhi</option><option>Bangalore</option>
+              <option>Pune</option><option>Hyderabad</option><option>Chennai</option>
+              <option>Kolkata</option><option>Ahmedabad</option><option>Jaipur</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field-error">Select your city</div>
+        </div>
+
+        <div class="field">
+          <label>Event Type</label>
+          <div class="type-chips">
+            <div class="type-chip" onclick="selectType(this)">🎤 Cultural Night</div>
+            <div class="type-chip selected" onclick="selectType(this)">💻 Tech Summit</div>
+            <div class="type-chip" onclick="selectType(this)">🎨 Art Fest</div>
+            <div class="type-chip" onclick="selectType(this)">🏆 Sports Day</div>
+            <div class="type-chip" onclick="selectType(this)">🎓 Convocation</div>
+            <div class="type-chip" onclick="selectType(this)">🎭 Drama Fest</div>
+          </div>
+        </div>
+
+        <div class="field" id="f-capacity">
+          <label>Expected Attendees</label>
+          <div class="input-wrap">
+            <span class="icon">👥</span>
+            <input type="number" id="capacity" placeholder="500" min="50" max="10000" oninput="updateCapacity(this)"/>
+          </div>
+          <div class="capacity-bar">
+            <div class="cap-track"><div class="cap-fill" id="capFill" style="width:20%"></div></div>
+            <div class="cap-label" id="capLabel">~500 pax</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Special Requirements <span style="color:var(--muted);text-transform:none;font-weight:400">(optional)</span></label>
+          <textarea id="requirements" placeholder="E.g. We need a traditional Indian stage setup with marigold decor, vegan catering preferred, 3 mics for panel discussion…"></textarea>
+        </div>
+
+        <div class="field" id="f-contactName">
+          <label>Your Name</label>
+          <div class="input-wrap">
+            <span class="icon">👤</span>
+            <input type="text" id="contactName" placeholder="Arjun Sharma"/>
+          </div>
+          <div class="field-error">Required</div>
+        </div>
+
+        <div class="form-row">
+          <div class="field" id="f-contactPhone">
+            <label>Phone</label>
+            <div class="input-wrap">
+              <span class="icon">📱</span>
+              <input type="tel" id="contactPhone" placeholder="+91 98765 43210"/>
+            </div>
+            <div class="field-error">Valid Indian number required</div>
+          </div>
+          <div class="field" id="f-contactEmail">
+            <label>College Email</label>
+            <div class="input-wrap">
+              <span class="icon">✉</span>
+              <input type="email" id="contactEmail" placeholder="you@iitb.ac.in"/>
+            </div>
+            <div class="field-error">Valid email required</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: REVIEW -->
+    <div class="step-panel" id="step3">
+      <div class="section-tag">✦ Step 3 of 4</div>
+      <h2 class="panel-heading">Review & Confirm</h2>
+      <p class="panel-sub">Double-check everything before making the advance payment.</p>
+
+      <div class="review-block">
+        <div class="review-block-header">
+          <span class="rbh-title">📦 Package</span>
+          <span class="rbh-edit" onclick="goToStep(1)">Edit</span>
+        </div>
+        <div class="review-block-body">
+          <div class="review-row">
+            <span class="rr-label">Package</span>
+            <span class="rr-val" id="rv-pkg">Pro Package</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">Base Price</span>
+            <span class="rr-val" id="rv-price">₹90,000</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">GST (18%)</span>
+            <span class="rr-val" id="rv-gst">₹16,200</span>
+          </div>
+          <div class="review-row" style="font-weight:600">
+            <span class="rr-label">Total Amount</span>
+            <span class="rr-val" id="rv-total" style="color:var(--saffron)">₹1,06,200</span>
+          </div>
+          <div class="review-row" style="color:var(--green)">
+            <span class="rr-label">Advance (30%)</span>
+            <span class="rr-val" id="rv-advance">₹31,860 due now</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="review-block">
+        <div class="review-block-header">
+          <span class="rbh-title">📋 Event Details</span>
+          <span class="rbh-edit" onclick="goToStep(2)">Edit</span>
+        </div>
+        <div class="review-block-body">
+          <div class="review-row">
+            <span class="rr-label">Event</span>
+            <span class="rr-val" id="rv-name">—</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">Date & Time</span>
+            <span class="rr-val" id="rv-datetime">—</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">Venue</span>
+            <span class="rr-val" id="rv-venue">—</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">City</span>
+            <span class="rr-val" id="rv-city">—</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">Event Type</span>
+            <span class="rr-val" id="rv-type">—</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">Attendees</span>
+            <span class="rr-val" id="rv-capacity">—</span>
+          </div>
+          <div class="review-row">
+            <span class="rr-label">Contact</span>
+            <span class="rr-val" id="rv-contact">—</span>
+          </div>
+        </div>
+      </div>
+
+      <label class="terms-check" for="termsBox">
+        <input type="checkbox" id="termsBox"/>
+        <span class="terms-text">
+          I agree to EventBazaar's <a href="#">Terms of Service</a> and <a href="#">Cancellation Policy</a>. I understand that the advance payment is non-refundable within 7 days of the event date. Remaining 70% is due 14 days before the event.
+        </span>
+      </label>
+    </div>
+
+    <!-- STEP 4: PAYMENT -->
+    <div class="step-panel" id="step4">
+      <div class="section-tag">✦ Step 4 of 4</div>
+      <h2 class="panel-heading">Secure Payment</h2>
+      <p class="panel-sub">Pay the 30% advance to confirm your booking. Balance due 14 days before event.</p>
+
+      <div class="razorpay-secure">
+        <span>🔒</span>
+        <span>Powered by <span class="razorpay-logo">Razorpay</span> — 256-bit SSL encrypted. Your payment info is never stored on our servers.</span>
+      </div>
+
+      <div class="payment-methods">
+        <div class="pay-method selected" onclick="selectPay(this)">
+          <div class="pay-icon">📱</div>
+          <div class="pay-info">
+            <div class="pay-name">UPI</div>
+            <div class="pay-desc">GPay, PhonePe, Paytm, BHIM & more</div>
+          </div>
+          <div class="pay-radio"></div>
+        </div>
+        <div class="pay-method" onclick="selectPay(this)">
+          <div class="pay-icon">💳</div>
+          <div class="pay-info">
+            <div class="pay-name">Credit / Debit Card</div>
+            <div class="pay-desc">Visa, Mastercard, RuPay</div>
+          </div>
+          <div class="pay-radio"></div>
+        </div>
+        <div class="pay-method" onclick="selectPay(this)">
+          <div class="pay-icon">🏦</div>
+          <div class="pay-info">
+            <div class="pay-name">Net Banking</div>
+            <div class="pay-desc">All major Indian banks</div>
+          </div>
+          <div class="pay-radio"></div>
+        </div>
+        <div class="pay-method" onclick="selectPay(this)">
+          <div class="pay-icon">💰</div>
+          <div class="pay-info">
+            <div class="pay-name">EMI</div>
+            <div class="pay-desc">No-cost EMI on select cards — 3/6/12 months</div>
+          </div>
+          <div class="pay-radio"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-panel -->
+
+  <!-- RIGHT: SIDEBAR SUMMARY -->
+  <div class="sidebar" id="sidebarSummary">
+    <div class="summary-card">
+
+      <!-- Planner Info -->
+      <div class="summary-planner">
+        <div class="planner-avatar">🎪</div>
+        <div>
+          <div class="planner-name">Sharma Events Co.</div>
+          <div class="planner-meta">Mumbai · Verified ✅</div>
+          <div class="planner-rating">⭐ 4.9 <span style="color:var(--text-muted)">(128 reviews)</span></div>
+        </div>
+      </div>
+
+      <!-- Price Breakdown -->
+      <div class="summary-section">
+        <div class="ss-title">Order Summary</div>
+        <div class="summary-row">
+          <span>Package</span>
+          <span class="val" id="sum-pkg">Pro Package</span>
+        </div>
+        <div class="summary-row">
+          <span>Base price</span>
+          <span class="val" id="sum-base">₹90,000</span>
+        </div>
+        <div class="summary-row">
+          <span>GST (18%)</span>
+          <span class="val" id="sum-gst">₹16,200</span>
+        </div>
+        <div class="summary-row" style="padding-top:0">
+          <span>Platform fee</span>
+          <span class="val">₹0</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span class="val" id="sum-total">₹1,06,200</span>
+        </div>
+        <div class="advance-tag">
+          🔶 <span><strong id="sum-advance">₹31,860</strong> advance due now · 30% of total</span>
+        </div>
+      </div>
+
+      <!-- Event Quick Info -->
+      <div class="summary-section" id="eventQuickInfo" style="display:none">
+        <div class="ss-title">Event</div>
+        <div class="summary-row">
+          <span>Name</span>
+          <span class="val" id="sum-name" style="font-size:13px">—</span>
+        </div>
+        <div class="summary-row">
+          <span>Date</span>
+          <span class="val" id="sum-date">—</span>
+        </div>
+        <div class="summary-row">
+          <span>Venue</span>
+          <span class="val" id="sum-venue" style="font-size:12px">—</span>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="summary-section">
+        <button class="cta-btn" id="ctaBtn" onclick="handleCTA()">
+          Continue →
+        </button>
+        <button class="back-btn" id="backBtn" onclick="prevStep()" style="display:none">
+          ← Go Back
+        </button>
+        <div class="trust-row">
+          <div class="trust-item">🔒 Secure</div>
+          <div class="trust-item">✅ Verified</div>
+          <div class="trust-item">↩ Refundable*</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- SUCCESS SCREEN -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✅</div>
+  <h2 class="success-title">Booking Confirmed!</h2>
+  <p class="success-sub">
+    Your advance payment was successful. <strong>Sharma Events Co.</strong> will contact you within 24 hours to discuss the finer details of your event.
+  </p>
+  <div class="booking-ref" id="bookingRef">
+    📋 EB-2025-78XQ
+  </div>
+  <div class="success-actions">
+    <button class="btn-primary">View Booking Details</button>
+    <button class="btn-outline">💬 Chat with Planner</button>
+    <button class="btn-outline">📧 Email Receipt</button>
+  </div>
+  <div class="next-steps">
+    <div class="ns-item">
+      <div class="ns-icon">📞</div>
+      <div class="ns-title">Planner calls you</div>
+      <div class="ns-desc">Within 24 hours of booking</div>
+    </div>
+    <div class="ns-item">
+      <div class="ns-icon">📋</div>
+      <div class="ns-title">Event checklist</div>
+      <div class="ns-desc">Shared 30 days before</div>
+    </div>
+    <div class="ns-item">
+      <div class="ns-icon">💰</div>
+      <div class="ns-title">Balance due</div>
+      <div class="ns-desc">14 days before event</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastMsg">Done!</span>
+</div>
+
+<script>
+/* ── STATE ─────────────────────── */
+const state = {
+  currentStep: 1,
+  selectedPkg: 'Pro',
+  pkgPrice: 90000,
+  selectedType: 'Tech Summit',
+  eventData: {}
+};
+
+/* ── PACKAGE SELECTION ─────────── */
+function selectPkg(el, name, priceStr, price) {
+  document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedPkg = name;
+  state.pkgPrice = price;
+  updateSummary();
+}
+
+/* ── EVENT TYPE CHIPS ─────────── */
+function selectType(el) {
+  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedType = el.textContent.trim();
+}
+
+/* ── CAPACITY BAR ─────────────── */
+function updateCapacity(input) {
+  const val = Math.min(parseInt(input.value) || 0, 10000);
+  const pct = Math.min((val / 5000) * 100, 100);
+  document.getElementById('capFill').style.width = pct + '%';
+  document.getElementById('capLabel').textContent = val ? `~${val.toLocaleString()} pax` : '—';
+}
+
+/* ── PAYMENT METHOD ───────────── */
+function selectPay(el) {
+  document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ── SUMMARY UPDATE ───────────── */
+function updateSummary() {
+  const base = state.pkgPrice;
+  const gst  = Math.round(base * 0.18);
+  const total = base + gst;
+  const adv   = Math.round(total * 0.30);
+
+  const fmt = n => '₹' + n.toLocaleString('en-IN');
+
+  // Sidebar
+  document.getElementById('sum-pkg').textContent = state.selectedPkg + ' Package';
+  document.getElementById('sum-base').textContent = fmt(base);
+  document.getElementById('sum-gst').textContent  = fmt(gst);
+  document.getElementById('sum-total').textContent = fmt(total);
+  document.getElementById('sum-advance').textContent = fmt(adv);
+
+  // Review step
+  document.getElementById('rv-pkg').textContent   = state.selectedPkg + ' Package';
+  document.getElementById('rv-price').textContent  = fmt(base);
+  document.getElementById('rv-gst').textContent    = fmt(gst);
+  document.getElementById('rv-total').textContent  = fmt(total);
+  document.getElementById('rv-advance').textContent = fmt(adv) + ' due now';
+}
+
+/* ── STEP NAVIGATION ──────────── */
+function goToStep(n) {
+  // Hide all panels
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+
+  // Progress
+  for (let i = 1; i <= 4; i++) {
+    const item = document.getElementById('prog' + i);
+    const circle = document.getElementById('pc' + i);
+    item.className = 'step-item';
+    if (i < n) {
+      item.classList.add('done');
+      circle.textContent = '✓';
+    } else if (i === n) {
+      item.classList.add('active');
+      circle.textContent = i;
+    } else {
+      circle.textContent = i;
+    }
+  }
+
+  state.currentStep = n;
+
+  // CTA label
+  const labels = ['', 'Continue to Details →', 'Review Booking →', 'Confirm & Pay →', 'Pay '];
+  if (n === 4) {
+    const adv = Math.round((state.pkgPrice * 1.18) * 0.30);
+    document.getElementById('ctaBtn').textContent = 'Pay ₹' + adv.toLocaleString('en-IN') + ' →';
+  } else {
+    document.getElementById('ctaBtn').textContent = labels[n];
+  }
+
+  // Back btn
+  document.getElementById('backBtn').style.display = n > 1 ? 'block' : 'none';
+
+  // Scroll to top
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function prevStep() {
+  if (state.currentStep > 1) goToStep(state.currentStep - 1);
+}
+
+/* ── VALIDATION ───────────────── */
+function validateStep2() {
+  let ok = true;
+
+  const checks = [
+    { id:'eventName',    fieldId:'f-eventName',    check: v => v.length > 2 },
+    { id:'eventDate',    fieldId:'f-eventDate',     check: v => { if(!v) return false; return new Date(v) > new Date(); } },
+    { id:'venue',        fieldId:'f-venue',          check: v => v.length > 2 },
+    { id:'city',         fieldId:'f-city',           check: v => v !== '' },
+    { id:'capacity',     fieldId:'f-capacity',       check: v => parseInt(v) >= 50 },
+    { id:'contactName',  fieldId:'f-contactName',    check: v => v.length > 1 },
+    { id:'contactPhone', fieldId:'f-contactPhone',   check: v => /^(\+91)?[6-9]\d{9}$/.test(v.replace(/\s/g,'')) },
+    { id:'contactEmail', fieldId:'f-contactEmail',   check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+  ];
+
+  checks.forEach(c => {
+    const input = document.getElementById(c.id);
+    const field = document.getElementById(c.fieldId);
+    const val   = input ? input.value.trim() : '';
+    const valid = c.check(val);
+    if (field) field.classList.toggle('error', !valid);
+    if (!valid) ok = false;
+  });
+
+  return ok;
+}
+
+/* ── POPULATE REVIEW ──────────── */
+function populateReview() {
+  const get = id => document.getElementById(id)?.value || '—';
+
+  const dateRaw = get('eventDate');
+  const dateStr = dateRaw !== '—'
+    ? new Date(dateRaw).toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'long', year:'numeric'})
+    : '—';
+  const timeStr = get('eventTime');
+
+  document.getElementById('rv-name').textContent     = get('eventName');
+  document.getElementById('rv-datetime').textContent = dateStr + ' at ' + timeStr;
+  document.getElementById('rv-venue').textContent    = get('venue');
+  document.getElementById('rv-city').textContent     = get('city');
+  document.getElementById('rv-type').textContent     = state.selectedType;
+  document.getElementById('rv-capacity').textContent = (get('capacity') || '—') + ' attendees';
+  document.getElementById('rv-contact').textContent  = get('contactName') + ' · ' + get('contactPhone');
+
+  // Sidebar event info
+  document.getElementById('sum-name').textContent  = get('eventName');
+  document.getElementById('sum-date').textContent  = dateStr;
+  document.getElementById('sum-venue').textContent = get('venue') + ', ' + get('city');
+  document.getElementById('eventQuickInfo').style.display = '';
+}
+
+/* ── CTA HANDLER ──────────────── */
+function handleCTA() {
+  const step = state.currentStep;
+
+  if (step === 1) {
+    goToStep(2);
+  }
+  else if (step === 2) {
+    if (!validateStep2()) {
+      showToast('⚠️ Please fix the errors above', 'error');
+      // Scroll to first error
+      const firstErr = document.querySelector('.field.error');
+      if (firstErr) firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    populateReview();
+    updateSummary();
+    goToStep(3);
+  }
+  else if (step === 3) {
+    if (!document.getElementById('termsBox').checked) {
+      showToast('⚠️ Please accept the terms to continue', 'error');
+      return;
+    }
+    goToStep(4);
+  }
+  else if (step === 4) {
+    initiateRazorpay();
+  }
+}
+
+/* ── RAZORPAY INTEGRATION ─────── */
+function initiateRazorpay() {
+  const btn = document.getElementById('ctaBtn');
+  btn.classList.add('loading');
+  btn.textContent = 'Opening Razorpay…';
+
+  // In production:
+  // 1. POST /api/bookings/create-order → get { orderId, amount, currency }
+  // 2. Open Razorpay checkout with that order
+  // 3. On success: POST /api/bookings/verify-payment
+
+  /* ── Razorpay checkout config ──
+  const options = {
+    key: process.env.RAZORPAY_KEY_ID,
+    amount: advanceAmount * 100,  // in paise
+    currency: 'INR',
+    name: 'EventBazaar',
+    description: `${state.selectedPkg} Package Advance`,
+    image: '/logo.png',
+    order_id: orderId,  // from backend
+    handler: async (response) => {
+      await axios.post('/api/bookings/verify-payment', {
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature,
+        bookingId: bookingId
+      });
+      showSuccess();
+    },
+    prefill: {
+      name: document.getElementById('contactName').value,
+      email: document.getElementById('contactEmail').value,
+      contact: document.getElementById('contactPhone').value
+    },
+    theme: { color: '#FF6B00' }
+  };
+  const rzp = new Razorpay(options);
+  rzp.open();
+  */
+
+  // DEMO: simulate payment flow
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    showSuccess();
+  }, 2000);
+}
+
+/* ── SUCCESS SCREEN ───────────── */
+function showSuccess() {
+  document.getElementById('mainLayout').style.display = 'none';
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+
+  // Generate ref
+  const ref = 'EB-2025-' + Math.random().toString(36).substring(2,6).toUpperCase();
+  document.getElementById('bookingRef').textContent = '📋 ' + ref;
+}
+
+/* ── TOAST ────────────────────── */
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function goBack() {
+  if (state.currentStep > 1) prevStep();
+}
+
+/* ── INIT ─────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Set min date to tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateInput = document.getElementById('eventDate');
+  if (dateInput) dateInput.min = tomorrow.toISOString().split('T')[0];
+
+  updateSummary();
+  goToStep(1);
+});
+</script>
+</body>
+</html>

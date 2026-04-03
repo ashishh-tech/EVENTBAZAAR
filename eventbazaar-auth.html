@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EventBazaar — Auth</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --saffron: #FF6B00;
+    --gold: #FFB800;
+    --deep: #0D0D0D;
+    --surface: #141414;
+    --card: #1C1C1C;
+    --border: #2A2A2A;
+    --muted: #666;
+    --text: #F0EDE6;
+    --text-soft: #999;
+    --error: #FF4545;
+    --success: #00C897;
+    --radius: 16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    overflow-x: hidden;
+  }
+
+  /* ─── LEFT PANEL ─────────────────────────── */
+  .left-panel {
+    display: none;
+    width: 45%;
+    background: linear-gradient(160deg, #1a0800 0%, #0D0D0D 50%, #001a12 100%);
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 48px;
+  }
+  @media(min-width:900px){ .left-panel { display: flex; } }
+
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 20%, rgba(255,107,0,.18) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,200,151,.12) 0%, transparent 60%);
+  }
+
+  .mandala-ring {
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,184,0,.12);
+    animation: spin 60s linear infinite;
+  }
+  .mandala-ring::before {
+    content:'';
+    position: absolute;
+    inset: 40px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255,107,0,.15);
+    animation: spin 30s linear infinite reverse;
+  }
+  .mandala-ring::after {
+    content:'';
+    position: absolute;
+    inset: 80px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,184,0,.10);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .dots-grid {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle, rgba(255,184,0,.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .left-content { position: relative; z-index: 2; }
+
+  .brand-mark {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--saffron);
+    margin-bottom: 24px;
+  }
+
+  .left-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.1;
+    font-weight: 900;
+    margin-bottom: 20px;
+  }
+  .left-headline em { color: var(--gold); font-style: normal; }
+
+  .left-sub {
+    font-size: 15px;
+    color: var(--text-soft);
+    line-height: 1.65;
+    max-width: 360px;
+    margin-bottom: 40px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 32px;
+  }
+  .stat { }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stat-num span { color: var(--saffron); }
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ─── RIGHT PANEL ─────────────────────────── */
+  .right-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    background: var(--surface);
+    position: relative;
+  }
+
+  .right-panel::before {
+    content:'';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--saffron), var(--gold), var(--success));
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 440px;
+  }
+
+  /* Mobile brand */
+  .mobile-brand {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .mobile-brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+  }
+  .mobile-brand-name span { color: var(--saffron); }
+  .mobile-brand-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  @media(min-width:900px){ .mobile-brand { display: none; } }
+
+  /* Tabs */
+  .tab-row {
+    display: flex;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all .25s;
+    letter-spacing: .3px;
+  }
+  .tab-btn.active {
+    background: var(--saffron);
+    color: #fff;
+  }
+
+  /* Role chips */
+  .role-section { margin-bottom: 24px; }
+  .role-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .role-chips {
+    display: flex;
+    gap: 10px;
+  }
+  .role-chip {
+    flex: 1;
+    padding: 10px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text-soft);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .role-chip .chip-icon { font-size: 18px; }
+  .role-chip:hover { border-color: var(--saffron); color: var(--text); }
+  .role-chip.selected {
+    border-color: var(--saffron);
+    background: rgba(255,107,0,.1);
+    color: var(--saffron);
+  }
+
+  /* Form */
+  .form-grid { display: flex; flex-direction: column; gap: 16px; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row .field { flex: 1; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+  .input-wrap { position: relative; }
+  .input-wrap .icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    pointer-events: none;
+    color: var(--muted);
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 13px 14px 13px 42px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    appearance: none;
+  }
+  .field input::placeholder { color: var(--muted); }
+  .field input:focus, .field select:focus {
+    border-color: var(--saffron);
+    box-shadow: 0 0 0 3px rgba(255,107,0,.12);
+  }
+  .field input.error-field { border-color: var(--error); }
+  .field-error {
+    font-size: 11px;
+    color: var(--error);
+    margin-top: 2px;
+    display: none;
+  }
+  .field-error.visible { display: block; }
+
+  /* Password toggle */
+  .pass-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+  }
+  .field input[type=password] ~ .pass-toggle,
+  .field input[type=text] ~ .pass-toggle { display: block; }
+
+  /* Strength bar */
+  .strength-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+    display: none;
+  }
+  .strength-bar.visible { display: block; }
+  .strength-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width .3s, background .3s;
+    width: 0%;
+  }
+
+  /* Submit btn */
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--saffron), #FF9000);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    margin-top: 4px;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: .3px;
+  }
+  .submit-btn::after {
+    content:'';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
+    pointer-events: none;
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,107,0,.35); }
+  .submit-btn:active { transform: scale(.98); }
+  .submit-btn.loading { opacity: .7; pointer-events: none; }
+  .submit-btn.loading::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    animation: shimmer 1s infinite;
+  }
+  @keyframes shimmer { to { left: 100%; } }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content:''; flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Social */
+  .social-row { display: flex; gap: 10px; }
+  .social-btn {
+    flex: 1;
+    padding: 11px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: border-color .2s, background .2s;
+  }
+  .social-btn:hover { border-color: #555; background: #222; }
+  .social-btn svg { width: 18px; height: 18px; }
+
+  /* Footer */
+  .auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .auth-footer a {
+    color: var(--saffron);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .auth-footer a:hover { text-decoration: underline; }
+
+  /* Terms */
+  .terms-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+  .terms-note a { color: var(--text-soft); text-decoration: underline; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 999;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+    box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--success); }
+  .toast.error { border-color: var(--error); }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+  .toast.error .toast-dot { background: var(--error); }
+
+  /* Forgot password link */
+  .forgot-link {
+    text-align: right;
+    font-size: 12px;
+  }
+  .forgot-link a { color: var(--text-soft); text-decoration: none; }
+  .forgot-link a:hover { color: var(--saffron); }
+
+  /* Page transition */
+  .auth-card { animation: fadeUp .4s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="dots-grid"></div>
+  <div class="mandala-ring"></div>
+  <div class="left-content">
+    <div class="brand-mark">✦ EventBazaar</div>
+    <h1 class="left-headline">
+      India's #1<br>
+      <em>College Event</em><br>
+      Planner Marketplace
+    </h1>
+    <p class="left-sub">
+      From tech summits to cultural nights — find, compare, and book verified event planners in minutes.
+    </p>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">2.4<span>K+</span></div>
+        <div class="stat-label">Planners</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">18<span>K</span></div>
+        <div class="stat-label">Events</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">340<span>+</span></div>
+        <div class="stat-label">Colleges</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="auth-card" id="authCard">
+
+    <div class="mobile-brand">
+      <div class="mobile-brand-name">Event<span>Bazaar</span></div>
+      <div class="mobile-brand-sub">College Event Planner Marketplace</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-row">
+      <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" id="registerTab" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- ─── LOGIN FORM ─────────────── -->
+    <div id="loginForm">
+      <div class="form-grid">
+        <div class="field">
+          <label>Email</label>
+          <div class="input-wrap">
+            <span class="icon">✉</span>
+            <input type="email" id="loginEmail" placeholder="you@college.edu" />
+          </div>
+          <span class="field-error" id="loginEmailErr">Enter a valid email</span>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" id="loginPass" placeholder="••••••••" />
+            <button class="pass-toggle" onclick="togglePass('loginPass', this)">👁</button>
+          </div>
+          <span class="field-error" id="loginPassErr">Password is required</span>
+        </div>
+
+        <div class="forgot-link"><a href="#">Forgot password?</a></div>
+
+        <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
+          Sign In to EventBazaar
+        </button>
+      </div>
+
+      <div class="divider">or continue with</div>
+      <div class="social-row">
+        <button class="social-btn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google
+        </button>
+        <button class="social-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.99 3.66 9.12 8.44 9.88V14.9H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.77l-.44 2.9h-2.33V21.9C18.34 21.12 22 17 22 12c0-5.52-4.48-10-10-10z"/></svg>
+          Facebook
+        </button>
+      </div>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="#" onclick="switchTab('register'); return false;">Register free</a>
+      </div>
+    </div>
+
+    <!-- ─── REGISTER FORM ─────────────── -->
+    <div id="registerForm" style="display:none">
+      <!-- Role Selection -->
+      <div class="role-section">
+        <div class="role-label">I am a</div>
+        <div class="role-chips">
+          <div class="role-chip selected" id="chip-organizer" onclick="selectRole('organizer')">
+            <span class="chip-icon">🎓</span>
+            <span>Organizer</span>
+          </div>
+          <div class="role-chip" id="chip-planner" onclick="selectRole('planner')">
+            <span class="chip-icon">🎪</span>
+            <span>Planner</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="field">
+            <label>First Name</label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" id="regFirst" placeholder="Arjun" />
+            </div>
+            <span class="field-error" id="regFirstErr">Required</span>
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" id="regLast" placeholder="Sharma" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email</label>
+          <div class="input-wrap">
+            <span class="icon">✉</span>
+            <input type="email" id="regEmail" placeholder="arjun@iitb.ac.in" />
+          </div>
+          <span class="field-error" id="regEmailErr">Enter a valid email</span>
+        </div>
+
+        <div class="field">
+          <label>Phone</label>
+          <div class="input-wrap">
+            <span class="icon">📱</span>
+            <input type="tel" id="regPhone" placeholder="+91 98765 43210" />
+          </div>
+          <span class="field-error" id="regPhoneErr">Enter valid Indian number</span>
+        </div>
+
+        <!-- Dynamic: College (organizer) or Business (planner) -->
+        <div class="field" id="orgField">
+          <label>College Name</label>
+          <div class="input-wrap">
+            <span class="icon">🏛</span>
+            <input type="text" id="regOrg" placeholder="IIT Bombay" />
+          </div>
+        </div>
+        <div class="field" id="bizField" style="display:none">
+          <label>Business Name</label>
+          <div class="input-wrap">
+            <span class="icon">🏢</span>
+            <input type="text" id="regBiz" placeholder="Sharma Events Pvt Ltd" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" id="regPass" placeholder="Min. 8 characters" oninput="checkStrength(this)" />
+            <button class="pass-toggle" onclick="togglePass('regPass', this)">👁</button>
+          </div>
+          <div class="strength-bar" id="strengthBar">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <span class="field-error" id="regPassErr">Min 8 chars, 1 uppercase, 1 number</span>
+        </div>
+
+        <button class="submit-btn" id="registerBtn" onclick="handleRegister()">
+          Create My Account
+        </button>
+      </div>
+
+      <div class="terms-note">
+        By creating an account you agree to our
+        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      </div>
+
+      <div class="auth-footer">
+        Already have an account? <a href="#" onclick="switchTab('login'); return false;">Sign in</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toastMsg">Welcome back!</span>
+</div>
+
+<script>
+  let activeRole = 'organizer';
+
+  function switchTab(tab) {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const card = document.getElementById('authCard');
+
+    // Animate out
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(8px)';
+
+    setTimeout(() => {
+      if (tab === 'login') {
+        loginForm.style.display = '';
+        registerForm.style.display = 'none';
+        loginTab.classList.add('active');
+        registerTab.classList.remove('active');
+      } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = '';
+        registerTab.classList.add('active');
+        loginTab.classList.remove('active');
+      }
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, 180);
+
+    card.style.transition = 'opacity .18s, transform .18s';
+  }
+
+  function selectRole(role) {
+    activeRole = role;
+    document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('chip-' + role).classList.add('selected');
+
+    if (role === 'organizer') {
+      document.getElementById('orgField').style.display = '';
+      document.getElementById('bizField').style.display = 'none';
+    } else {
+      document.getElementById('orgField').style.display = 'none';
+      document.getElementById('bizField').style.display = '';
+    }
+  }
+
+  function togglePass(id, btn) {
+    const input = document.getElementById(id);
+    if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+    else { input.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function checkStrength(input) {
+    const val = input.value;
+    const bar = document.getElementById('strengthBar');
+    const fill = document.getElementById('strengthFill');
+    bar.classList.add('visible');
+
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const widths = ['0%', '25%', '50%', '75%', '100%'];
+    const colors = ['transparent', '#FF4545', '#FFB800', '#00C897', '#00C897'];
+    fill.style.width = widths[score];
+    fill.style.background = colors[score];
+  }
+
+  function showError(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('visible', show);
+  }
+
+  function markField(id, error) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('error-field', error);
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    const m = document.getElementById('toastMsg');
+    m.textContent = msg;
+    t.className = 'toast ' + type;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    let valid = true;
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    showError('loginEmailErr', !emailOk);
+    markField('loginEmail', !emailOk);
+    if (!emailOk) valid = false;
+
+    const passOk = pass.length >= 6;
+    showError('loginPassErr', !passOk);
+    markField('loginPass', !passOk);
+    if (!passOk) valid = false;
+
+    if (!valid) return;
+
+    const btn = document.getElementById('loginBtn');
+    btn.classList.add('loading');
+    btn.textContent = 'Signing in…';
+
+    // Simulate API call
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.textContent = 'Sign In to EventBazaar';
+      showToast('🎉 Welcome back to EventBazaar!', 'success');
+      // In real app: axios.post('/api/auth/login', { email, password: pass })
+    }, 1600);
+  }
+
+  function handleRegister() {
+    const first = document.getElementById('regFirst').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const pass  = document.getElementById('regPass').value;
+    let valid = true;
+
+    if (!first) { showError('regFirstErr', true); markField('regFirst', true); valid = false; }
+    else { showError('regFirstErr', false); markField('regFirst', false); }
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    showError('regEmailErr', !emailOk); markField('regEmail', !emailOk);
+    if (!emailOk) valid = false;
+
+    const phoneOk = /^(\+91)?[6-9]\d{9}$/.test(phone.replace(/\s/g,''));
+    showError('regPhoneErr', !phoneOk); markField('regPhone', !phoneOk);
+    if (!phoneOk) valid = false;
+
+    const passOk = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/.test(pass);
+    showError('regPassErr', !passOk); markField('regPass', !passOk);
+    if (!passOk) valid = false;
+
+    if (!valid) return;
+
+    const btn = document.getElementById('registerBtn');
+    btn.classList.add('loading');
+    btn.textContent = 'Creating account…';
+
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.textContent = 'Create My Account';
+      showToast('✅ Account created! Check your email.', 'success');
+      // In real app: axios.post('/api/auth/register', { firstName: first, email, phone, password: pass, role: activeRole })
+    }, 1800);
+  }
+</script>
+</body>
+</html>
