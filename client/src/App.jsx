@@ -4,11 +4,13 @@ import Auth from './pages/Auth';
 import Booking from './pages/Booking';
 import Chat from './pages/Chat';
 import Admin from './pages/Admin';
+import FloatingNav from './FloatingNav';
 import './index.css';
 
 function App() {
   return (
     <BrowserRouter>
+      <FloatingNav />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />

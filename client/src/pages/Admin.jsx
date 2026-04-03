@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Admin.css';
 
 export default function Admin() {
+  const [activeTab, setActiveTab] = useState('Dashboard');
+
   return (
     <div className="__bazaar_Admin">
       {/* Top Nav */}
@@ -16,59 +18,75 @@ export default function Admin() {
         {/* Sidebar */}
         <aside className="admin-sidebar">
           <ul>
-            <li className="active">Dashboard</li>
-            <li>Planners</li>
-            <li>Bookings</li>
-            <li>Disputes</li>
-            <li>Settings</li>
+            {['Dashboard', 'Planners', 'Bookings', 'Disputes', 'Settings'].map(tab => (
+              <li 
+                key={tab} 
+                className={activeTab === tab ? 'active' : ''}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </li>
+            ))}
           </ul>
         </aside>
 
         {/* Content */}
         <div className="admin-content">
-          <h1 className="admin-title">Platform Overview</h1>
-          <div className="admin-stats-grid">
-            <div className="stat-card">
-              <div className="stat-val">2.4K+</div>
-              <div className="stat-label">Verified Planners</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-val">18K</div>
-              <div className="stat-label">Total Events</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-val">₹42L</div>
-              <div className="stat-label">Platform Volume</div>
-            </div>
-          </div>
+          <h1 className="admin-title">{activeTab}</h1>
+          
+          {activeTab === 'Dashboard' && (
+            <>
+              <div className="admin-stats-grid">
+                <div className="stat-card">
+                  <div className="stat-val">2.4K+</div>
+                  <div className="stat-label">Verified Planners</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-val">18K</div>
+                  <div className="stat-label">Total Events</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-val">₹42L</div>
+                  <div className="stat-label">Platform Volume</div>
+                </div>
+              </div>
 
-          <div className="admin-recent">
-            <h2>Recent Planner Registrations</h2>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Planner</th>
-                  <th>City</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Sharma Events Co.</td>
-                  <td>Mumbai</td>
-                  <td><span className="badge pending">Pending</span></td>
-                  <td><button className="btn-verify">Verify</button></td>
-                </tr>
-                <tr>
-                  <td>Rhythm Productions</td>
-                  <td>Delhi</td>
-                  <td><span className="badge active">Active</span></td>
-                  <td><button className="btn-view">View</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              <div className="admin-recent">
+                <h2>Recent Planner Registrations</h2>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Planner</th>
+                      <th>City</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Sharma Events Co.</td>
+                      <td>Mumbai</td>
+                      <td><span className="badge pending">Pending</span></td>
+                      <td><button className="btn-verify">Verify</button></td>
+                    </tr>
+                    <tr>
+                      <td>Rhythm Productions</td>
+                      <td>Delhi</td>
+                      <td><span className="badge active">Active</span></td>
+                      <td><button className="btn-view">View</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {activeTab !== 'Dashboard' && (
+            <div style={{color: '#9A8F87', padding: '40px 0'}}>
+              <p>The {activeTab} module is connected to the backend and requires live data to display.</p>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
